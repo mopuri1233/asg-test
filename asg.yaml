@@ -1,0 +1,30 @@
+Resources:
+  MyAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      LaunchConfigurationName: !Ref MyLaunchConfig
+      MinSize: 1
+      MaxSize: 5
+      DesiredCapacity: 1
+      #VPCZoneIdentifier: 
+        #- subnet-12345678 # Specify your subnet ID here
+      Tags:
+        - Key: Name
+          Value: MyASG
+          PropagateAtLaunch: true
+
+  MyLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: ami-0440d3b780d96b29d # Specify your AMI ID here
+      InstanceType: t2.micro
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          PYTHON_VERSION=$(grep "python_version" /userdata/userdatavariables.yaml | cut -d'=' -f2)
+          DOCKER_VERSION=$(grep "docker_version" /userdata/userdatavariables.yaml | cut -d'=' -f2)
+
+          yum install -y python$PYTHON_VERSION
+          yum install -y docker$DOCKER_VERSION
+          service docker start
+
